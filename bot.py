@@ -5,7 +5,7 @@ from telebot import types
 
 TOKEN = "7332243224:AAHjzIQt048adKi9lXUBDr0su6YSprRR_sw"
 
-bot = .TeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN)
 
 # قاعدة بيانات مؤقتة (في الواقع تستخدم قاعدة بيانات حقيقية)
 users = {}
