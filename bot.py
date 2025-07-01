@@ -182,8 +182,14 @@ def start(update: Update, context: CallbackContext):
                 referrals[user_id] = ref_id
 
     save_data()
-    update.message.reply_text("أهلاً بيك في بوت المهام!\nاكتب /tasks عشان تبدأ.")
+    keyboard = [
+    ["/tasks", "/balance"],
+    ["/referrals", "/withdraw"],
+    ["/mytasks"]
+    ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
+    update.message.reply_text("أهلاً بيك في بوت المهام!\nاختار أمر من الأزرار تحت 👇", reply_markup=reply_markup)
 
 def tasks_cmd(update: Update, context: CallbackContext):
     user_id = str(update.effective_user.id)
@@ -191,19 +197,46 @@ def tasks_cmd(update: Update, context: CallbackContext):
         update.message.reply_text("أرسل /start أولاً.")
         return
 
+    # الصفحة الحالية (الافتراضية 0)
+    page = 0
+    if context.args:
+        try:
+            page = int(context.args[0])
+        except:
+            page = 0
+
+    tasks_per_page = 10
+    start_index = page * tasks_per_page
+    end_index = start_index + tasks_per_page
+
     keyboard = []
-    for i, task in enumerate(tasks):
-        if i not in users[user_id]["completed"]:
-            keyboard.append([
-                InlineKeyboardButton(task["text"], url=task["url"]),
-                InlineKeyboardButton("✅ تم", callback_data=f"done_{i}")
-            ])
+    # جلب المهام اللي ما أنجزها المستخدم
+    available_tasks = [i for i in range(len(tasks)) if i not in users[user_id]["completed"]]
+
+    # المهام للصفحة الحالية فقط
+    page_tasks = available_tasks[start_index:end_index]
+
+    for i in page_tasks:
+        keyboard.append([
+            InlineKeyboardButton(tasks[i]["text"], url=tasks[i]["url"]),
+            InlineKeyboardButton("✅ تم", callback_data=f"done_{i}")
+        ])
+
+    # أزرار التنقل بين الصفحات
+    nav_buttons = []
+    if start_index > 0:
+        nav_buttons.append(InlineKeyboardButton("⬅️ السابق", callback_data=f"page_{page-1}"))
+    if end_index < len(available_tasks):
+        nav_buttons.append(InlineKeyboardButton("التالي ➡️", callback_data=f"page_{page+1}"))
+    if nav_buttons:
+        keyboard.append(nav_buttons)
 
     if not keyboard:
         update.message.reply_text("أنجزت كل المهام اليومية ❤️")
     else:
         reply_markup = InlineKeyboardMarkup(keyboard)
         update.message.reply_text("اضغط على المهام وارجع اضغط تم بعد كل واحدة:", reply_markup=reply_markup)
+
 def button(update: Update, context: CallbackContext):
     query = update.callback_query
     user_id = str(query.from_user.id)
@@ -219,6 +252,39 @@ def button(update: Update, context: CallbackContext):
             query.edit_message_text("تم احتساب المهمة ✅")
         else:
             query.answer("أنجزت هذه المهمة من قبل ❌")
+
+    elif data.startswith("page_"):
+        page = int(data.split("_")[1])
+        # عرض المهام بالصفحة المطلوبة بنفس طريقة tasks_cmd لكن عبر callback
+        tasks_per_page = 10
+        start_index = page * tasks_per_page
+        end_index = start_index + tasks_per_page
+
+        available_tasks = [i for i in range(len(tasks)) if i not in users[user_id]["completed"]]
+        page_tasks = available_tasks[start_index:end_index]
+
+        keyboard = []
+        for i in page_tasks:
+            keyboard.append([
+                InlineKeyboardButton(tasks[i]["text"], url=tasks[i]["url"]),
+                InlineKeyboardButton("✅ تم", callback_data=f"done_{i}")
+            ])
+
+        nav_buttons = []
+        if start_index > 0:
+            nav_buttons.append(InlineKeyboardButton("⬅️ السابق", callback_data=f"page_{page-1}"))
+        if end_index < len(available_tasks):
+            nav_buttons.append(InlineKeyboardButton("التالي ➡️", callback_data=f"page_{page+1}"))
+        if nav_buttons:
+            keyboard.append(nav_buttons)
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        if keyboard:
+            query.edit_message_text("اضغط على المهام وارجع اضغط تم بعد كل واحدة:", reply_markup=reply_markup)
+        else:
+            query.edit_message_text("أنجزت كل المهام اليومية ❤️")
+        query.answer()
 
 def balance(update: Update, context: CallbackContext):
     user_id = str(update.effective_user.id)
