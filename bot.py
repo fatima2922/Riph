@@ -103,7 +103,22 @@ def referrals_cmd(update: Update, context: CallbackContext):
     ref_link = f"https://t.me/YOUR_BOT_USERNAME?start={user_id}"
     total_refs = len(users[user_id]["referrals"])
     update.message.reply_text(f"رابط إحالتك:\n{ref_link}\n\nعدد الإحالات: {total_refs}")
+def mytasks(update: Update, context: CallbackContext):
+    user_id = str(update.effective_user.id)
+    if user_id not in users:
+        update.message.reply_text("أرسل /start أولاً.")
+        return
 
+    total_tasks = len(tasks)
+    completed_tasks = len(users[user_id]["completed"])
+    remaining_tasks = total_tasks - completed_tasks
+    points = users[user_id]["points"]
+
+    update.message.reply_text(
+        f"أنجزت {completed_tasks} من أصل {total_tasks} مهمة ✅\n"
+        f"باقي ليك {remaining_tasks} مهمة 🔁\n"
+        f"رصيدك الكلي: {points:.3f} دولار 💰"
+    )
 def main():
     load_data()
     updater = Updater(TOKEN)
@@ -114,6 +129,7 @@ def main():
     dp.add_handler(CommandHandler("balance", balance))
     dp.add_handler(CommandHandler("referrals", referrals_cmd))
     dp.add_handler(CallbackQueryHandler(button))
+    dp.add_handler(CommandHandler("mytasks", mytasks))
 
     updater.start_polling()
     updater.idle()
