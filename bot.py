@@ -47,7 +47,7 @@ def start(update: Update, context: CallbackContext):
         if args:
             ref_id = args[0]
             if ref_id != user_id and ref_id in users:
-                users[ref_id]["points"] += 0.001  # 10% إحالة
+                users[ref_id]["points"] += 0.007  # 10% إحالة
                 users[ref_id]["referrals"].append(user_id)
                 referrals[user_id] = ref_id
 
