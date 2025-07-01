@@ -129,8 +129,7 @@ def task(task_id):
     return f"تم استقبال المهمة رقم {task_id}"
 
 def run_flask():
-    app.run(host='0.0.0.0', port=8000)
-
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
 if __name__ == '__main__':
     threading.Thread(target=run_flask).start()
     main()
