@@ -12,8 +12,8 @@ from telegram.ext import (
     CallbackContext
 )
 import json
-
 import os
+
 TOKEN = os.getenv("TOKEN")
 users = {}
 referrals = {}
@@ -62,7 +62,6 @@ def tasks_cmd(update: Update, context: CallbackContext):
 
     keyboard = []
     for i, task in enumerate(tasks):
-        if i >= 47: break
         if i not in users[user_id]["completed"]:
             keyboard.append([InlineKeyboardButton(task["text"], url=task["url"], callback_data=f"done_{i}")])
 
@@ -118,12 +117,8 @@ def main():
 
     updater.start_polling()
     updater.idle()
-    
-app = Flask(__name__)
 
-@app.route('/')
-def home():
-    app = Flask(__name__)
+app = Flask(__name__)
 
 @app.route('/')
 def home():
@@ -140,3 +135,7 @@ if __name__ == '__main__':
     threading.Thread(target=run_flask).start()
     main()
 
+
+
+
+            
