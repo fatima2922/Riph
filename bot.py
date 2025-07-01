@@ -14,7 +14,7 @@ from telegram.ext import (
 import json
 import os
 
-TOKEN = os.getenv("TOKEN")
+TOKEN = "7709139375:AAHKZoteAJbdUj9LTjX6381cIU3CRplZnXk"
 users = {}
 referrals = {}
 tasks = [
