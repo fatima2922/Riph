@@ -168,6 +168,8 @@ def save_data():
     with open("referrals.json", "w") as f:
         json.dump(referrals, f)
 
+from telegram import ReplyKeyboardMarkup
+
 def start(update: Update, context: CallbackContext):
     user_id = str(update.effective_user.id)
     args = context.args
@@ -182,10 +184,11 @@ def start(update: Update, context: CallbackContext):
                 referrals[user_id] = ref_id
 
     save_data()
+
     keyboard = [
-    ["/tasks", "/balance"],
-    ["/referrals", "/withdraw"],
-    ["/mytasks"]
+        ["/tasks", "/balance"],
+        ["/referrals", "/withdraw"],
+        ["/mytasks"]
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
