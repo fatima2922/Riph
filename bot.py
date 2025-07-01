@@ -118,6 +118,26 @@ def main():
 
     updater.start_polling()
     updater.idle()
+    
+app = Flask(__name__)
 
+@app.route('/')
+def home():
+    app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "البوت شغال 🟢"
+
+@app.route('/task/<task_id>')
+def task(task_id):
+    return f"تم استقبال المهمة رقم {task_id}"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=8000)
+
+if __name__ == '__main__':
+    threading.Thread(target=run_flask).start()
+    main()
 if __name__ == '__main__':
     main()
