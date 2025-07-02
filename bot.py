@@ -274,4 +274,4 @@ def home():
     return "البوت شغال 🟢"
 
 def run_flask():
-    app.run(host='0.0.0.0
+    app.run(host='0.0.0.0)
