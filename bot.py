@@ -18,6 +18,43 @@ import requests
 import datetime
 import time
 
+import json
+import os
+from telegram import ReplyKeyboardMarkup
+
+DATA_FILE = "data.json"
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {"users": {}, "referrals": {}, "task_done": [], "pending_referrals": {}}
+    with open(DATA_FILE, "r") as f:
+        data = json.load(f)
+        data["task_done"] = set(data.get("task_done", []))
+        return data
+
+def save_data(data):
+    data["task_done"] = list(data["task_done"])  # عشان JSON يقبلها
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
+
+def add_money(user_id, amount, data):
+    user_id = str(user_id)
+    if user_id not in data["users"]:
+        data["users"][user_id] = 0.0
+    data["users"][user_id] += amount
+
+def register_referral(referrer_id, referred_id, data):
+    referred_id = str(referred_id)
+    if referred_id in data["referrals"]:
+        return False
+    data["pending_referrals"][referred_id] = str(referrer_id)
+    return True
+
+def check_and_reward(referrer_id, referred_id, data):
+    if referred_id in data["pending_referrals"]:
+        add_money(data["pending_referrals"][referred_id], 0.004, data)
+        data["referrals"][referred_id] = data["pending_referrals"][referred_id]
+        del data["pending_referrals"][referred_id]
 TOKEN = "7709139375:AAHKZoteAJbdUj9LTjX6381cIU3CRplZnXk"
 API_KEY = "a88b2ee9b26afcf7d099485214f98bac3f7f3360"
 API_BASE =  "https://zegalinks.com/api/v1"
@@ -313,7 +350,7 @@ def get_shortlink_earnings(shortlink):
     except:
         return 0.0
 
-def start(update: Update, context: CallbackContext):
+def start(update, context):
     user_id = str(update.effective_user.id)
     args = context.args
 
@@ -322,8 +359,7 @@ def start(update: Update, context: CallbackContext):
         if args:
             ref_id = args[0]
             if ref_id != user_id and ref_id in users:
-                users[ref_id]["points"] += 0.007
-                users[ref_id]["referrals"].append(user_id)
+                # سجل الإحالة بدون إضافة نقاط لحد ما يعمل مهمة
                 referrals[user_id] = ref_id
 
     save_data()
